@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Biology Quest ม.4</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f4f7f4;margin:0;padding:20px;color:#17351f}
+.wrap{max-width:720px;margin:auto}.card{background:white;border-radius:18px;padding:24px;box-shadow:0 4px 18px #0001}
+button{display:block;width:100%;padding:14px;margin:9px 0;border:1px solid #ccd8ce;border-radius:12px;background:#fafcfa;font-size:16px;text-align:left;cursor:pointer}
+button:hover{background:#eef7ef}.center{text-align:center}.hidden{display:none}.score{float:right;font-weight:bold}
+.correct{background:#dff4e5!important;border-color:#51a56a}.wrong{background:#ffe3e3!important;border-color:#d66}
+.boxes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.boxes button{text-align:center;font-size:28px}
+h1{margin-top:0} .muted{color:#68756c}.pill{display:inline-block;background:#edf6ef;padding:7px 10px;border-radius:20px;margin:3px}
+</style>
+</head>
+<body><div class="wrap"><div id="app" class="card"></div></div>
+<script>
+const app=document.getElementById("app");let score=0,part=0,q=0,lock=false;
+const mcq=[
+["ข้อใดเป็นลักษณะสำคัญของสิ่งมีชีวิต",["มีการเจริญเติบโตและสืบพันธุ์","ไม่มีการใช้พลังงาน","ไม่ตอบสนองต่อสิ่งเร้า","ไม่มีการเปลี่ยนแปลง"],0],
+["ขั้นตอนสำคัญของกระบวนการศึกษาทางวิทยาศาสตร์คืออะไร",["สังเกตและตั้งปัญหา","สรุปผลก่อนทดลอง","เดาคำตอบโดยไม่ทดลอง","ละเลยข้อมูล"],0],
+["สารใดเป็นตัวทำละลายที่สำคัญในสิ่งมีชีวิต",["น้ำ","ไขมัน","โปรตีน","กรดนิวคลีอิก"],0],
+["หน่วยพื้นฐานของสิ่งมีชีวิตคืออะไร",["อวัยวะ","เนื้อเยื่อ","เซลล์","ระบบอวัยวะ"],2],
+["ข้อใดเป็นสารชีวโมเลกุล",["โปรตีน","ออกซิเจน","น้ำ","เกลือแร่"],0]];
+const fill=[
+["สารที่ประกอบด้วยกรดอะมิโนเป็นหน่วยย่อยคือ ______",["โปรตีน","ลิพิด","คาร์โบไฮเดรต","น้ำ"],0],
+["การเคลื่อนที่ของน้ำผ่านเยื่อเลือกผ่านเรียกว่า ______",["การแพร่","ออสโมซิส","เอกโซไซโทซิส","เอนโดไซโทซิส"],1],
+["ออร์แกเนลล์ที่สร้าง ATP เป็นหลักคือ ______",["ไรโบโซม","ไมโทคอนเดรีย","นิวเคลียส","กอลจิบอดี"],1],
+["หน่วยย่อยของโปรตีนคือ ______",["กลูโคส","กรดไขมัน","กรดอะมิโน","กลีเซอรอล"],2],
+["การรักษาสภาวะภายในให้คงที่เรียกว่า ______",["โฮมีโอสเตซิส","วิวัฒนาการ","เมแทบอลิซึม","การสังเคราะห์ด้วยแสง"],0]];
+const pairs=[["นิวเคลียส","เก็บสารพันธุกรรมและควบคุมการทำงาน"],["ไรโบโซม","สังเคราะห์โปรตีน"],["ไมโทคอนเดรีย","สร้าง ATP"],["เยื่อหุ้มเซลล์","ควบคุมการผ่านเข้าออกของสาร"],["คลอโรพลาสต์","สังเคราะห์ด้วยแสง"]];
+const pics=[["🔋","ออร์แกเนลล์ใดเปรียบเสมือนแหล่งผลิตพลังงานของเซลล์",["ไมโทคอนเดรีย","ไรโบโซม","นิวเคลียส","แวคิวโอล"],0],["🧠","โครงสร้างใดทำหน้าที่ควบคุมการทำงานของเซลล์",["นิวเคลียส","ผนังเซลล์","คลอโรพลาสต์","ไรโบโซม"],0],["🌱","ออร์แกเนลล์ใดเกี่ยวข้องกับการสังเคราะห์ด้วยแสง",["คลอโรพลาสต์","ไลโซโซม","เซนทริโอล","ไมโทคอนเดรีย"],0]];
+const tf=[["ไมโทคอนเดรียเกี่ยวข้องกับการสร้าง ATP","ถูก"],["ไรโบโซมทำหน้าที่สังเคราะห์โปรตีน","ถูก"],["เซลล์เป็นหน่วยพื้นฐานของสิ่งมีชีวิต","ถูก"],["ลิพิดทุกชนิดละลายน้ำได้ดี","ผิด"],["นิวเคลียสไม่มีสารพันธุกรรม","ผิด"]];
+let done=[],boxes=[10,20,0,30,10,-5],order=["สังเกตและตั้งปัญหา","ตั้งสมมติฐาน","ทดลองและเก็บข้อมูล","วิเคราะห์และสรุปผล"];
+function head(t,s){return `<h2>${t}<span class="score">⭐ ${score}</span></h2><p class="muted">${s}</p>`}
+function mcqView(){let x=mcq[q];app.innerHTML=head("พาร์ท 1 • เลือกคำตอบ",`ข้อ ${q+1}/5`)+`<h3>${x[0]}</h3>${x[1].map((o,i)=>`<button data-i="${i}">${String.fromCharCode(65+i)}. ${o}</button>`).join("")}<div id="m"></div>`;bind(x[2],x[1][x[2]])}
+function fillView(){let x=fill[q];app.innerHTML=head("พาร์ท 3 • เติมคำจากช้อย",`ข้อ ${q+1}/5`)+`<h3>${x[0]}</h3>${x[1].map((o,i)=>`<button data-i="${i}">${String.fromCharCode(65+i)}. ${o}</button>`).join("")}<div id="m"></div>`;bind(x[2],x[1][x[2]])}
+function picView(){let x=pics[q];app.innerHTML=head("พาร์ท 4 • ทายจากภาพ",`ข้อ ${q+1}/3`)+`<div class="center" style="font-size:80px">${x[0]}</div><h3>${x[1]}</h3>${x[2].map((o,i)=>`<button data-i="${i}">${String.fromCharCode(65+i)}. ${o}</button>`).join("")}<div id="m"></div>`;bind(x[3],x[2][x[3]])}
+function bind(c,correct){app.querySelectorAll("button").forEach(b=>b.onclick=()=>{if(lock)return;lock=true;let i=+b.dataset.i;app.querySelectorAll("button").forEach((z,j)=>{if(j===c)z.classList.add("correct");if(j===i&&i!==c)z.classList.add("wrong")});if(i===c)score+=10;document.getElementById("m").innerHTML=`<p>${i===c?"✅ ถูกต้อง +10 คะแนน":"❌ คำตอบคือ "+correct}</p><button id="next">ไปต่อ</button>`;document.getElementById("next").onclick=()=>{q++;lock=false;next()}})}
+function pairsView(){if(done.length===5){part=2;q=0;next();return}let sel=null;app.innerHTML=head("พาร์ท 2 • จับคู่","เลือกคำศัพท์ แล้วเลือกหน้าที่ที่ตรงกัน")+`<div class="grid">${pairs.map((p,i)=>done.includes(i)?`<button class="correct">${p[0]} ✓</button>`:`<button class="term" data-i="${i}">${p[0]}</button>`).join("")}</div><p>หน้าที่</p>${pairs.map((p,i)=>done.includes(i)?"":`<button class="desc" data-i="${i}">${p[1]}</button>`).join("")}<div id="m"></div>`;app.querySelectorAll(".term").forEach(b=>b.onclick=()=>{sel=+b.dataset.i});app.querySelectorAll(".desc").forEach(b=>b.onclick=()=>{if(sel===+b.dataset.i){score+=10;done.push(sel);pairsView()}else document.getElementById("m").textContent="❌ ยังไม่ตรง ลองใหม่ครับ"})}
+function boxesView(){app.innerHTML=head("พาร์ท 5 • เปิดกล่องปริศนา","เลือกกล่อง 1 ใบเพื่อรับคะแนนโบนัส")+`<div class="boxes">${boxes.map((_,i)=>`<button data-i="${i}">🎁<br><small>กล่อง ${i+1}</small></button>`).join("")}</div><div id="m"></div>`;app.querySelectorAll("button").forEach(b=>b.onclick=()=>{if(lock)return;lock=true;let v=boxes[+b.dataset.i];score=Math.max(0,score+v);b.disabled=true;document.getElementById("m").innerHTML=`<p>${v>0?"🎉 โบนัส +"+v:v<0?"💥 เสีย "+Math.abs(v):"😅 กล่องนี้ไม่มีคะแนน"}</p><button id="next">ไปต่อ</button>`;document.getElementById("next").onclick=()=>{part=5;q=0;lock=false;next()}})}
+function tfView(){let x=tf[q];app.innerHTML=head("พาร์ท 6 • จริงหรือเท็จ",`ข้อ ${q+1}/5`)+`<h3>${x[0]}</h3><button data-v="ถูก">✅ ถูก</button><button data-v="ผิด">❌ ผิด</button><div id="m"></div>`;app.querySelectorAll("button").forEach(b=>b.onclick=()=>{let ok=b.dataset.v===x[1];if(ok)score+=10;document.getElementById("m").innerHTML=`<p>${ok?"✅ ถูกต้อง +10":"❌ คำตอบคือ "+x[1]}</p><button id="next">ไปต่อ</button>`;document.getElementById("next").onclick=()=>{q++;next()}})}
+function orderView(){let s=[],sh=[...order].sort(()=>Math.random()-.5);app.innerHTML=head("พาร์ท 7 • เรียงลำดับ","แตะตามลำดับ 1 → 4")+sh.map(x=>`<button data-x="${x}">${x}</button>`).join("")+`<p id="seq">ลำดับ: -</p><div id="m"></div>`;app.querySelectorAll("button").forEach(b=>b.onclick=()=>{if(s.includes(b.dataset.x))return;s.push(b.dataset.x);b.classList.add("correct");document.getElementById("seq").textContent="ลำดับ: "+s.map((x,i)=>i+1+". "+x).join(" | ");if(s.length===4){let ok=s.every((x,i)=>x===order[i]);if(ok)score+=20;document.getElementById("m").innerHTML=`<p>${ok?"🎉 ถูกต้อง +20":"❌ ยังไม่ถูก"}</p><button id="next">ไปด่านบอส</button>`;document.getElementById("next").onclick=()=>{part=7;q=0;next()}}})}
+function boss(){const qs=[["ออร์แกเนลล์ใดเกี่ยวข้องกับการสังเคราะห์โปรตีนและมีไรโบโซมเกาะ",["ร่างแหเอนโดพลาซึมชนิดหยาบ","ไลโซโซม","แวคิวโอล","เซนทริโอล"],0],["ข้อใดอธิบายออสโมซิสได้ถูกต้อง",["การเคลื่อนที่ของน้ำผ่านเยื่อเลือกผ่าน","การสร้าง ATP","การเคลื่อนที่ของโปรตีน","การสร้างไขมัน"],0],["ข้อใดเป็นตัวอย่างของการรักษาดุลยภาพ",["การควบคุมอุณหภูมิร่างกาย","การหยุดใช้พลังงาน","การเพิ่มจำนวนออร์แกเนลล์","การหยุดหายใจ"],0]];let x=qs[q];app.innerHTML=head("พาร์ท 8 • ด่านบอส 🏆",`ข้อ ${q+1}/3 • ข้อละ 20 คะแนน`)+`<h3>${x[0]}</h3>`+x[1].map((o,i)=>`<button data-i="${i}">${String.fromCharCode(65+i)}. ${o}</button>`).join("")+`<div id="m"></div>`;bindBoss(x[2],x[1][x[2]])}
+function bindBoss(c,correct){app.querySelectorAll("button").forEach(b=>b.onclick=()=>{if(lock)return;lock=true;let i=+b.dataset.i;if(i===c)score+=20;document.getElementById("m").innerHTML=`<p>${i===c?"🔥 ผ่านบอส +20":"❌ คำตอบคือ "+correct}</p><button id="next">${q<2?"ข้อต่อไป":"ดูผลคะแนน"}</button>`;document.getElementById("next").onclick=()=>{q++;lock=false;if(q<3)boss();else finish()}})}
+function finish(){app.innerHTML=`<div class="center"><div style="font-size:60px">🏆</div><h1>จบ Biology Quest!</h1><h2>⭐ ${score} คะแนน</h2><p>${score>=180?"นักชีววิทยาระดับเซียน":score>=130?"นักชีววิทยาระดับเก่ง":score>=80?"นักชีววิทยาฝึกหัด":"นักชีววิทยามือใหม่"}</p><button onclick="location.reload()">เล่นอีกครั้ง</button></div>`}
+function next(){if(part===0){if(q<5)mcqView();else{part=1;q=0;pairsView()}}else if(part===1)pairsView();else if(part===2){if(q<5)fillView();else{part=3;q=0;next()}}else if(part===3){if(q<3)picView();else{part=4;boxesView()}}else if(part===5){if(q<5)tfView();else{part=6;q=0;orderView()}}else if(part===7)boss()}
+app.innerHTML=`<div class="center"><div style="font-size:60px">🧬</div><h1>Biology Quest ม.4</h1><p class="muted">เกมชีววิทยา บทที่ 1–3</p><p><span class="pill">🎯 เลือกคำตอบ</span><span class="pill">🔗 จับคู่</span><span class="pill">🧩 เติมคำ</span><span class="pill">🖼️ ทายจากภาพ</span><span class="pill">🎁 กล่องปริศนา</span><span class="pill">✅❌ จริง/เท็จ</span><span class="pill">🔀 เรียงลำดับ</span><span class="pill">🏆 ด่านบอส</span></p><button onclick="this.parentElement.classList.add('hidden');app.classList.remove('hidden');part=0;q=0;next()">เริ่มเกม 🚀</button></div>`;
+</script></body></html>
